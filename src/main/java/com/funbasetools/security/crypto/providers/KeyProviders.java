@@ -1,30 +1,63 @@
-package com.funbasetools.security.crypto;
+package com.funbasetools.security.crypto.providers;
 
+import com.funbasetools.Try;
+import com.funbasetools.security.crypto.PemKeyType;
+import com.funbasetools.security.crypto.util.PemUtils;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
 
-public final class PemUtils {
+public final class KeyProviders {
 
-    public static PemObject readPemObjectFrom(final InputStream inputStream) throws IOException {
-        final PemReader pemReader = new PemReader(new InputStreamReader(inputStream));
-        return pemReader.readPemObject();
+    public static RSAKeyProvider getRSAKeyProvider(
+        final RSAPrivateKey privateKey,
+        final RSAPublicKey publicKey) {
+
+        return new RSAKeyProvider() {
+            @Override
+            public Try<RSAPrivateKey> getPrivateKey() {
+                return Try.success(privateKey);
+            }
+
+            @Override
+            public Try<RSAPublicKey> getPublicKey() {
+                return Try.success(publicKey);
+            }
+        };
+    }
+
+    public static ECDSAKeyProvider getECDSAKeyProvider(
+        final ECPrivateKey privateKey,
+        final ECPublicKey publicKey) {
+
+        return new ECDSAKeyProvider() {
+            @Override
+            public Try<ECPrivateKey> getPrivateKey() {
+                return Try.success(privateKey);
+            }
+
+            @Override
+            public Try<ECPublicKey> getPublicKey() {
+                return Try.success(publicKey);
+            }
+        };
     }
 
     public static PrivateKey getPrivateKey(final String algorithmName, final InputStream inputStream)
         throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
 
-        final byte[] privateKeyContent = readPemObjectFrom(inputStream).getContent();
+        final byte[] privateKeyContent = PemUtils.readPemObjectFrom(inputStream).getContent();
         final KeyFactory keyFactory = KeyFactory.getInstance(algorithmName);
         final EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyContent);
 
@@ -34,7 +67,7 @@ public final class PemUtils {
     public static PublicKey getPublicKey(final String algorithmName, final InputStream inputStream)
         throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
 
-        final byte[] publicKeyContent = readPemObjectFrom(inputStream).getContent();
+        final byte[] publicKeyContent = PemUtils.readPemObjectFrom(inputStream).getContent();
         final KeyFactory keyFactory = KeyFactory.getInstance(algorithmName);
         final EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyContent);
 
@@ -53,6 +86,6 @@ public final class PemUtils {
         return getPublicKey(keyType.name(), inputStream);
     }
 
-    private PemUtils() {
+    private KeyProviders() {
     }
 }

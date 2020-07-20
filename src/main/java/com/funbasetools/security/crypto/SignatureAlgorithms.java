@@ -1,7 +1,6 @@
 package com.funbasetools.security.crypto;
 
 import com.funbasetools.ShouldNotReachThisPointException;
-import com.funbasetools.Try;
 import com.funbasetools.io.IOUtils;
 import com.funbasetools.security.SecurityUtils;
 import com.funbasetools.security.crypto.providers.ECDSAKeyProvider;
@@ -13,10 +12,6 @@ import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
-import java.security.interfaces.ECPrivateKey;
-import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.Optional;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -226,40 +221,6 @@ public final class SignatureAlgorithms {
                 }
             },
             algorithmName);
-    }
-
-    public static RSAKeyProvider getRSAKeyProvider(
-        final RSAPrivateKey privateKey,
-        final RSAPublicKey publicKey) {
-
-        return new RSAKeyProvider() {
-            @Override
-            public Try<RSAPrivateKey> getPrivateKey() {
-                return Try.success(privateKey);
-            }
-
-            @Override
-            public Try<RSAPublicKey> getPublicKey() {
-                return Try.success(publicKey);
-            }
-        };
-    }
-
-    public static ECDSAKeyProvider getECDSAKeyProvider(
-        final ECPrivateKey privateKey,
-        final ECPublicKey publicKey) {
-
-        return new ECDSAKeyProvider() {
-            @Override
-            public Try<ECPrivateKey> getPrivateKey() {
-                return Try.success(privateKey);
-            }
-
-            @Override
-            public Try<ECPublicKey> getPublicKey() {
-                return Try.success(publicKey);
-            }
-        };
     }
 
     private SignatureAlgorithms() {
