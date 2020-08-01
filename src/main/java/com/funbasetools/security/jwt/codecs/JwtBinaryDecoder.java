@@ -60,6 +60,6 @@ public class JwtBinaryDecoder implements JwtDecoder<byte[]> {
 
         final var jsonDecoder = new JwtDecoderImpl(jsonParser, jsonObjectMapper);
 
-        return jsonDecoder.decode(headerJson, payloadJson, signatureBase64);
+        return jsonDecoder.decodeJson(headerJson, payloadJson, signatureBase64);
     }
 }
