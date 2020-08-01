@@ -15,9 +15,8 @@ public interface DecodedJwt {
 
     default byte[] getContentBytes(final Function<Map<String, Object>, String> jsonEncoder) {
         return JwtUtils.getJwtContentBytes(
-            JwtUtils.getMapFrom(getHeader().getClaims()),
-            JwtUtils.getMapFrom(getPayload().getClaims()),
-            jsonEncoder
+            jsonEncoder, JwtUtils.getMapFrom(getHeader().getClaims()),
+            JwtUtils.getMapFrom(getPayload().getClaims())
         );
     }
 

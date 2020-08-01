@@ -2,6 +2,7 @@ package com.funbasetools.security.crypto;
 
 import com.funbasetools.ShouldNotReachThisPointException;
 import com.funbasetools.io.IOUtils;
+import com.funbasetools.pm.Match;
 import com.funbasetools.security.SecurityUtils;
 import com.funbasetools.security.crypto.providers.ECDSAKeyProvider;
 import com.funbasetools.security.crypto.providers.KeyProvider;
@@ -85,6 +86,27 @@ public final class SignatureAlgorithms {
             default:
                 return Optional.empty();
         }
+    }
+
+    public static Optional<SignatureAlgorithm> getAlgorithmProviderById(final String algorithmId,
+                                                                        final Object keyProvider) {
+        return Match
+            .<SignatureAlgorithm>when(algorithmId, keyProvider)
+            .isTuple(RS512_ID, RSAKeyProvider.class).then(SignatureAlgorithms::getSha512WithRsa)
+            .isTuple(ES512_ID, ECDSAKeyProvider.class).then(SignatureAlgorithms::getSha224WithEcdsa)
+            .isTuple(HS512_ID, byte[].class).then(SignatureAlgorithms::getHmacSha512)
+            .isTuple(RS384_ID, RSAKeyProvider.class).then(SignatureAlgorithms::getSha384WithRsa)
+            .isTuple(ES384_ID, ECDSAKeyProvider.class).then(SignatureAlgorithms::getSha224WithEcdsa)
+            .isTuple(HS384_ID, byte[].class).then(SignatureAlgorithms::getHmacSha384)
+            .isTuple(RS256_ID, RSAKeyProvider.class).then(SignatureAlgorithms::getSha256WithRsa)
+            .isTuple(ES256_ID, ECDSAKeyProvider.class).then(SignatureAlgorithms::getSha224WithEcdsa)
+            .isTuple(HS256_ID, byte[].class).then(SignatureAlgorithms::getHmacSha256)
+            .isTuple(RS224_ID, RSAKeyProvider.class).then(SignatureAlgorithms::getSha224WithRsa)
+            .isTuple(ES224_ID, ECDSAKeyProvider.class).then(SignatureAlgorithms::getSha224WithEcdsa)
+            .isTuple(HS224_ID, byte[].class).then(SignatureAlgorithms::getHmacSha224)
+            .isTuple(RS1_ID,   RSAKeyProvider.class).then(SignatureAlgorithms::getSha1WithRsa)
+            .isTuple(HS1_ID,   byte[].class).then(SignatureAlgorithms::getHmacSha1)
+            .toOptional();
     }
 
     public static SignatureAlgorithm getSha224WithEcdsa(final ECDSAKeyProvider ECDSAKeyProvider) {

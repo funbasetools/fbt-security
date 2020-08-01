@@ -20,18 +20,21 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public final class JwtUtils {
 
-    public static byte[] getJwtContentBytes(final Map<String, Object> headerMap,
-                                            final Map<String, Object> payloadMap,
-                                            final Function<Map<String, Object>, String> jsonEncoder) {
+    public static String getSectionBase64(final Function<Map<String, Object>, String> jsonEncoder,
+                                          final Map<String, Object> sectionMap) {
 
-        final String headerJson = jsonEncoder.apply(headerMap);
-        final String payloadJson = jsonEncoder.apply(payloadMap);
+        final String sectionJson = jsonEncoder.apply(sectionMap);
+        final byte[] sectionBytes = sectionJson.getBytes(JWT_CHARSET);
 
-        final byte[] headerBytes = headerJson.getBytes(JWT_CHARSET);
-        final byte[] payloadBytes = payloadJson.getBytes(JWT_CHARSET);
+        return Base64Encoder.URL_NO_PADDING.encode(sectionBytes);
+    }
 
-        final String headerBase64 = Base64Encoder.URL_NO_PADDING.encode(headerBytes);
-        final String payloadBase64 = Base64Encoder.URL_NO_PADDING.encode(payloadBytes);
+    public static byte[] getJwtContentBytes(final Function<Map<String, Object>, String> jsonEncoder,
+                                            final Map<String, Object> headerMap,
+                                            final Map<String, Object> payloadMap) {
+
+        final String headerBase64 = getSectionBase64(jsonEncoder, headerMap);
+        final String payloadBase64 = getSectionBase64(jsonEncoder, payloadMap);
 
         return String
             .format("%s%c%s", headerBase64, SEPARATOR, payloadBase64)

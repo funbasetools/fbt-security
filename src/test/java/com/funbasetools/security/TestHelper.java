@@ -4,6 +4,7 @@ import com.funbasetools.Types;
 import com.funbasetools.security.crypto.PemKeyType;
 import com.funbasetools.security.crypto.providers.KeyProviders;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -53,7 +54,11 @@ public final class TestHelper {
             return jsonObj
                 .keySet()
                 .stream()
-                .map(k -> Pair.of(k, jsonObj.get(k)))
+                .map(k -> {
+                    final JsonElement jsonElement = jsonObj.get(k);
+
+                    return Pair.of(k, jsonElement);
+                })
                 .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
         };
     }

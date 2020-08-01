@@ -27,13 +27,14 @@ public class JwtBuilderAndVerifierTest {
         final String secret = "12345";
         final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithms
             .getHmacSha256(secret.getBytes(Jwt.JWT_CHARSET));
+        final JwtSigner signer = new JwtSigner(jsonEncoder(), signatureAlgorithm);
 
         // when
         final DecodedJwt decodedJwt = new JwtBuilder()
             .withSubject("1234567890")
             .addClaim(NAME_CLAIM, "John Doe")
             .addClaim(ISSUED_AT_CLAIM, 1516239022)
-            .buildAndSign(signatureAlgorithm, jsonEncoder());
+            .buildAndSign(signer);
 
         // then
         assertEquals("bgGd720CeHP4kY9mGuMEoteBq4TP4d0W2XkpiI4bVgg", decodedJwt.getSignature());
@@ -56,13 +57,14 @@ public class JwtBuilderAndVerifierTest {
             (RSAPublicKey) getPublicKeyFromResources(PemKeyType.RSA, RSA_PUBLIC_KEY)
         );
         final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithms.getSha256WithRsa(keyProvider);
+        final JwtSigner signer = new JwtSigner(jsonEncoder(), signatureAlgorithm);
 
         // when
         final DecodedJwt decodedJwt = new JwtBuilder()
             .withSubject("1234567890")
             .addClaim(NAME_CLAIM, "John Doe")
             .addClaim(ISSUED_AT_CLAIM, 1516239022)
-            .buildAndSign(signatureAlgorithm, jsonEncoder());
+            .buildAndSign(signer);
 
         // then
         assertEquals(

@@ -23,12 +23,14 @@ public class JwtDecoderImpl implements JwtDecoder<Jwt> {
 
     @Override
     public DecodedJwt decode(Jwt jwt) {
-        return decode(jwt.getHeaderBase64(), jwt.getPayloadBase64(), jwt.getSignatureBase64());
+        final JwtBase64Decoder jwtBase64Decoder = new JwtBase64Decoder(jsonParser, jsonObjectMapper);
+
+        return jwtBase64Decoder.decode(jwt.getHeaderBase64(), jwt.getPayloadBase64(), jwt.getSignatureBase64());
     }
 
-    public DecodedJwt decode(final String headerJson,
-                             final String payloadJson,
-                             final String signatureBase64) {
+    public DecodedJwt decodeJson(final String headerJson,
+                                 final String payloadJson,
+                                 final String signatureBase64) {
 
         final Map<String, Object> headerJsonObj = jsonParser.apply(headerJson);
         final Map<String, Object> payloadJsonObj = jsonParser.apply(payloadJson);

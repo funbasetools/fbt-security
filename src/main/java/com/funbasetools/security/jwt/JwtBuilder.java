@@ -10,8 +10,6 @@ import static com.funbasetools.security.jwt.subtypes.Claim.KEY_ID_CLAIM;
 import static com.funbasetools.security.jwt.subtypes.Claim.SUBJECT_CLAIM;
 import static com.funbasetools.security.jwt.subtypes.Claim.TYPE_CLAIM;
 
-import com.funbasetools.Try;
-import com.funbasetools.codecs.text.Base64Encoder;
 import com.funbasetools.security.crypto.SignatureAlgorithm;
 import com.funbasetools.security.crypto.SignatureAlgorithms;
 import com.funbasetools.security.jwt.subtypes.Header;
@@ -40,11 +38,22 @@ public final class JwtBuilder {
     }
 
     public JwtBuilder addHeader(final String name, final Object value) {
-        if (value == null) {
-            headerMap.remove(name);
+        if (name != null) {
+            if (value == null) {
+                headerMap.remove(name);
+            }
+            else {
+                headerMap.put(name, value);
+            }
         }
-        else {
-            headerMap.put(name, value);
+        return this;
+    }
+
+    public JwtBuilder ensureHeader(final String name, final Object value) {
+        if (name != null && value != null) {
+            if (!headerMap.containsKey(name)) {
+                headerMap.put(name, value);
+            }
         }
         return this;
     }
@@ -77,8 +86,19 @@ public final class JwtBuilder {
         return addClaim(SUBJECT_CLAIM, subject);
     }
 
-    public DecodedJwt buildAndSign(final SignatureAlgorithm signatureAlgorithm,
-                                   final Function<Map<String, Object>, String> jsonEncoder) {
+    public DecodedJwt build(final Function<Map<String, Object>, String> jsonEncoder) {
+        ensureHeader(TYPE_CLAIM, "JWT");
+
+        final Header header = HeaderImpl.of(JwtUtils.getClaimsFrom(headerMap));
+        final Payload payload = PayloadImpl.of(JwtUtils.getClaimsFrom(payloadMap));
+
+        return DecodedJwt.of(header, payload, "");
+    }
+
+    public DecodedJwt buildAndSign(final JwtSigner signer) {
+
+        final SignatureAlgorithm signatureAlgorithm = signer.getSignatureAlgorithm();
+
         final String algorithmId = SignatureAlgorithms
             .getAlgorithmId(signatureAlgorithm)
             .orElseThrow(() -> new IllegalArgumentException(
@@ -91,23 +111,8 @@ public final class JwtBuilder {
         final Header header = HeaderImpl.of(JwtUtils.getClaimsFrom(headerMap));
         final Payload payload = PayloadImpl.of(JwtUtils.getClaimsFrom(payloadMap));
 
-        final String signatureBase64 = sign(signatureAlgorithm, jsonEncoder);
+        final DecodedJwt unsignedJwt = DecodedJwt.of(header, payload, null);
 
-        return DecodedJwt.of(header, payload, signatureBase64);
-    }
-
-    // private methods
-
-    private String sign(final SignatureAlgorithm signatureAlgorithm,
-                        final Function<Map<String, Object>, String> jsonEncoder) {
-
-        final byte[] contentBytes = JwtUtils.getJwtContentBytes(headerMap, payloadMap, jsonEncoder);
-
-        final byte[] signatureBytes = Try
-            .of(() -> signatureAlgorithm.sign(contentBytes))
-            .toOptional()
-            .orElseGet(() -> new byte[0]);
-
-        return Base64Encoder.URL_NO_PADDING.encode(signatureBytes);
+        return signer.sign(unsignedJwt);
     }
 }
